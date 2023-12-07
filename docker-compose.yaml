@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  my-mysql-db:
+    image: mysql:8.2
+    container_name: db-wiselink-events
+    ports:
+      - "3336:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 45645852
+      MYSQL_DATABASE: wiselink-events
+      MYSQL_USER: fran
+      MYSQL_PASSWORD: 45645852
