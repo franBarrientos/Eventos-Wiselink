@@ -44,9 +44,10 @@ func (ec *EventController) CreateEvent(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": error.Error(),
 		})
-	} else {
-		return c.Status(fiber.StatusCreated).JSON(eventCreated)
 	}
+
+	return c.Status(fiber.StatusCreated).JSON(eventCreated)
+
 }
 
 func (ec *EventController) GetEventsFiltered(c *fiber.Ctx) error {

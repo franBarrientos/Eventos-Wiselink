@@ -32,7 +32,7 @@ func (u UserRepositoryDb) CreateUser(user *domain.User) (domain.User, error) {
 
 func (u UserRepositoryDb) GetUserByEmail(email string) (domain.User, error) {
 	var user entities_db.User
-	result := u.database.Where("email = ?", email).First(&user)
+	result := u.database.Where("email = ?", email).Preload("PersonalData").Preload("EventsSubscribed").Preload("EventsSubscribed.Place").Preload("EventsSubscribed.Organizer").Preload("EventsSubscribed.Organizer.PersonalData").First(&user)
 	if result.Error != nil {
 		return domain.User{}, result.Error
 	}
