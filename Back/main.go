@@ -19,6 +19,6 @@ func main() {
 	}
 
 	app := fiber.New()
-	routes.InitRoutes(app, db)
+	routes.InitRoutes(app, db, env)
 	app.Listen(":3000")
 }
