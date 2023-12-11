@@ -2,11 +2,13 @@ package repositories_db
 
 import (
 	"errors"
+	"fmt"
 	"github.com/franBarrientos/application/repositories"
 	"github.com/franBarrientos/domain"
 	"github.com/franBarrientos/infrastructure/gorm/entities_db"
 	"github.com/franBarrientos/infrastructure/gorm/mappers_db"
 	"gorm.io/gorm"
+	"strconv"
 	"time"
 )
 
@@ -57,13 +59,23 @@ func (ev EventRepositoryDb) GetEventsFiltered(date string, state string, title s
 		query = query.Where("date < NOW()")
 	}
 	if date != "" {
-		query = query.Where("date = ?", date)
+		recivedDate, err := time.Parse(time.RFC3339, date)
+		if err != nil {
+			fmt.Println("Error al parsear la fecha recibida:", err)
+			return nil, err
+		}
+		truncatedRecivedDate := recivedDate.Truncate(24 * time.Hour)
+
+		formattedDate := truncatedRecivedDate.Format("2006-01-02 15:04:05.999")
+
+		query = query.Where("DATE(date) = DATE(?)", formattedDate)
+
 	}
 	if err := query.Where(" state = ?", true).Preload("Organizer").Preload("Organizer.PersonalData").Preload("Place").Find(&events).Error; err != nil {
 		return nil, err
 	}
 
-	var dtosEvents []domain.Event
+	dtosEvents := []domain.Event{}
 	for _, dbEvent := range events {
 		dtosEvents = append(dtosEvents, mappers_db.EventEntityToEventDomain(&dbEvent))
 	}
@@ -72,6 +84,14 @@ func (ev EventRepositoryDb) GetEventsFiltered(date string, state string, title s
 
 func (ev EventRepositoryDb) CreateEvent(e *domain.Event) (domain.Event, error) {
 	evenEntity := mappers_db.EventDomainToEventEntity(e)
+	/*parsedTime, err := time.Parse("2006-01-02T15:04", e["Date"].(string))
+	if err != nil {
+		fmt.Println("Error al parsear la fecha:", err)
+		return domain.Event{}, err
+
+	}
+
+	eventToUpdate.Date = parsedTime*/
 	result := ev.database.Create(&evenEntity)
 	if result.Error != nil {
 		return domain.Event{}, result.Error
@@ -99,19 +119,33 @@ func (ev EventRepositoryDb) UpdateEvent(id int, e map[string]interface{}) (domai
 	}
 
 	if e["Date"] != nil {
-		eventToUpdate.Date = e["Date"].(time.Time)
+		parsedTime, err := time.Parse("2006-01-02T15:04", e["Date"].(string))
+		if err != nil {
+			fmt.Println("Error al parsear la fecha:", err)
+			return domain.Event{}, err
+
+		}
+
+		eventToUpdate.Date = parsedTime
 	}
 
 	if e["Organizer"] != nil {
 		eventToUpdate.Organizer.PersonalData.FirstName = e["Organizer"].(map[string]interface{})["FirstName"].(string)
 		eventToUpdate.Organizer.PersonalData.LastName = e["Organizer"].(map[string]interface{})["LastName"].(string)
+		ev.database.Save(&eventToUpdate.Organizer.PersonalData)
 	}
 
 	if e["Place"] != nil {
 		eventToUpdate.Place.Country = e["Place"].(map[string]interface{})["Country"].(string)
 		eventToUpdate.Place.City = e["Place"].(map[string]interface{})["City"].(string)
 		eventToUpdate.Place.Address = e["Place"].(map[string]interface{})["Address"].(string)
-		eventToUpdate.Place.AddressNumber = e["Place"].(map[string]interface{})["AddressNumber"].(int)
+		addressNumber := e["Place"].(map[string]interface{})["AddressNumber"].(string)
+		intValue, err := strconv.Atoi(addressNumber)
+		if err != nil {
+			return domain.Event{}, err
+		}
+		eventToUpdate.Place.AddressNumber = intValue
+		ev.database.Save(&eventToUpdate.Place)
 	}
 
 	if e["State"] != nil {

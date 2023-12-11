@@ -38,13 +38,12 @@ func (e EventUseCase) GetEventsFiltered(date string, state string, title string)
 	events, err := e.eventRepository.GetEventsFiltered(date, state, title)
 	if err != nil {
 		return nil, err
-	} else {
-		var dtosEvents []output.EventDTO
-		for _, event := range events {
-			dtosEvents = append(dtosEvents, mappers_dto.EventDomainToEventDTO(&event))
-		}
-		return dtosEvents, nil
 	}
+	dtosEvents := []output.EventDTO{}
+	for _, event := range events {
+		dtosEvents = append(dtosEvents, mappers_dto.EventDomainToEventDTO(&event))
+	}
+	return dtosEvents, nil
 
 }
 

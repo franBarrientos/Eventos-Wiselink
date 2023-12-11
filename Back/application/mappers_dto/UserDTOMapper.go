@@ -14,6 +14,7 @@ func UserDomainToUserDTO(user *domain.User) output.UserDTO {
 	}
 
 	return output.UserDTO{
+		Id:        user.Id,
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
 		Email:     user.Email,

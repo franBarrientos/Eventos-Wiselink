@@ -30,6 +30,7 @@ func (ec *EventController) GetAllEvents(c *fiber.Ctx) error {
 func (ec *EventController) CreateEvent(c *fiber.Ctx) error {
 	event := input.EventAddDTO{}
 	c.BodyParser(&event)
+
 	if err := c.BodyParser(&event); err != nil {
 		return err
 	}

@@ -5,6 +5,7 @@ import (
 	"github.com/franBarrientos/infrastructure/gorm"
 	"github.com/franBarrientos/infrastructure/rest/routes"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"log"
 )
 
@@ -19,6 +20,7 @@ func main() {
 	}
 
 	app := fiber.New()
+	app.Use(cors.New())
 	routes.InitRoutes(app, db, env)
 	app.Listen(":3000")
 }

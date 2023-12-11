@@ -5,9 +5,9 @@ import (
 )
 
 type User struct {
-	ID               int    `gorm:"primaryKey;autoIncrement"`
-	Email            string `gorm:"unique"`
-	Password         string
+	ID               int         `gorm:"primaryKey;autoIncrement"`
+	Email            string      `gorm:"unique;not null"`
+	Password         string      `gorm:"not null"`
 	Role             domain.Role `gorm:"type:enum('ADMIN', 'USER')"`
 	PersonalDataID   int
 	PersonalData     PersonalData `gorm:"foreignKey:PersonalDataID"`
