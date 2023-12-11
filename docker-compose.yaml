@@ -2,7 +2,7 @@ version: '3.8'
 services:
   my-mysql-db:
     image: mysql:8.2
-    container_name: db-wiselink-events
+    container_name: db-events
     ports:
       - "3336:3306"
     environment:
@@ -10,3 +10,24 @@ services:
       MYSQL_DATABASE: wiselink-events
       MYSQL_USER: fran
       MYSQL_PASSWORD: 45645852
+    volumes:
+      - ./dbfiles:/docker-entrypoint-initdb.d
+
+  my-go-app:
+    container_name: back
+    ports:
+      - "8080:8080"
+    build:
+      context: ./Back
+    depends_on:
+      - my-mysql-db
+
+
+  front:
+    container_name: front
+    ports:
+      - "5175:80"
+    depends_on:
+      - my-go-app
+    build:
+      context: ./Front

@@ -1,6 +1,6 @@
 package input
 
 type OrganizerAddDTO struct {
-	FirstName string `validate:"required"`
-	LastName  string `validate:"required"`
+	FirstName string `validate:"required,max=40"`
+	LastName  string `validate:"required,max=40"`
 }
