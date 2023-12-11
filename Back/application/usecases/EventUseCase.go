@@ -12,13 +12,13 @@ type EventUseCase struct {
 	eventRepository repositories.IEventRepository
 }
 
-func (e EventUseCase) GetAllEvents() ([]output.EventDTO, error) {
+func (e EventUseCase) GetAllEvents(page int, limit int) ([]output.EventDTO, error) {
 
-	events, err := e.eventRepository.GetAllEvents()
+	events, err := e.eventRepository.GetAllEvents(page, limit)
 	if err != nil {
 		return nil, err
 	}
-	var dtosEvents []output.EventDTO
+	dtosEvents := []output.EventDTO{}
 	for _, event := range events {
 		dtosEvents = append(dtosEvents, mappers_dto.EventDomainToEventDTO(&event))
 	}
@@ -33,9 +33,9 @@ func NewEventUseCase(eventRepository repositories.IEventRepository) domain.IEven
 
 }
 
-func (e EventUseCase) GetEventsFiltered(date string, state string, title string) ([]output.EventDTO, error) {
+func (e EventUseCase) GetEventsFiltered(date string, state string, title string, page int, limit int) ([]output.EventDTO, error) {
 
-	events, err := e.eventRepository.GetEventsFiltered(date, state, title)
+	events, err := e.eventRepository.GetEventsFiltered(date, state, title, page, limit)
 	if err != nil {
 		return nil, err
 	}

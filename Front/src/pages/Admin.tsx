@@ -19,6 +19,7 @@ import ModalDetailEventAdmin from "../components/ModalDetailEventAdmin.tsx"
 import { useNavigate } from "react-router-dom"
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form"
 import {EventAddDTO} from "../api/dtos/input.ts";
+import Pagination from "../components/Pagination.tsx";
 
 export default function Admin() {
   const navigate = useNavigate()
@@ -229,6 +230,7 @@ export default function Admin() {
           <div className="flex flex-wrap -mx-4  -my-8">
             {events?.map((event) => <EventCard {...event} />)}
           </div>
+            <Pagination />
         </div>
       </section>
 

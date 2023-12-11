@@ -5,7 +5,6 @@ import (
 	"github.com/franBarrientos/application/repositories"
 	"github.com/franBarrientos/domain"
 	"github.com/franBarrientos/domain/dtos/output"
-	"time"
 )
 
 type UserUseCase struct {
@@ -19,21 +18,17 @@ func NewUserUseCase(userRepository repositories.IUserRepository) domain.IUserUse
 	}
 }
 
-func (u UserUseCase) GetEventsSubscribed(idUser int, state string) ([]output.EventDTO, error) {
+func (u UserUseCase) GetEventsSubscribed(idUser int, state string, page int, limit int) ([]output.EventDTO, error) {
 
-	result, err := u.userRepository.GetUserById(idUser)
+	eventsDomain, err := u.userRepository.GetEventsSubscribed(idUser, state, page, limit)
 	if err != nil {
 		return nil, err
 	}
-	var events []output.EventDTO
-	for _, event := range result.Events {
-		if state == "" {
-			events = append(events, mappers_dto.EventDomainToEventDTO(&event))
-		} else if state == "active" && event.Date.After(time.Now()) {
-			events = append(events, mappers_dto.EventDomainToEventDTO(&event))
-		} else if state == "completed" && event.Date.Before(time.Now()) {
-			events = append(events, mappers_dto.EventDomainToEventDTO(&event))
-		}
+	events := []output.EventDTO{}
+	for _, event := range eventsDomain {
+		events = append(events, mappers_dto.EventDomainToEventDTO(&event))
+
 	}
+
 	return events, nil
 }

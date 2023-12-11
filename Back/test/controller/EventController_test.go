@@ -19,7 +19,7 @@ type MockEventUseCase struct {
 	mock.Mock
 }
 
-func (m *MockEventUseCase) GetAllEvents() ([]output.EventDTO, error) {
+func (m *MockEventUseCase) GetAllEvents(page int, limit int) ([]output.EventDTO, error) {
 	args := m.Called()
 	return args.Get(0).([]output.EventDTO), args.Error(1)
 }

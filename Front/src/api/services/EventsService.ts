@@ -2,8 +2,10 @@ import { clienteAxios } from "../client.ts"
 import { SubscribeAddDTO } from "../dtos/input.ts"
 import { UserDTO } from "../dtos/output.ts"
 
-export const getAllEventsPublished = () => {
-  return clienteAxios.get("/api/v1/events").then((r) => r.data)
+export const getAllEventsPublished = (
+    page: number = 1
+) => {
+  return clienteAxios.get("/api/v1/events"+`?page=${page}&limit=3`).then((r) => r.data)
 }
 
 export const SubscribeToEvent = (data: SubscribeAddDTO) => {
@@ -21,9 +23,10 @@ export const GetEventsFiltered = (
     title: string,
   date: string,
   state: string,
+    page: number = 1
 ) => {
   return clienteAxios
-    .get(`/api/v1/events?title=${title??""}&date=${date??""}&state=${state??""}`)
+    .get(`/api/v1/events?title=${title??""}&date=${date??""}&state=${state??""}&page=${page}&limit=3`)
     .then((r) => r.data)
 }
 

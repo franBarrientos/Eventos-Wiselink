@@ -16,8 +16,10 @@ type EventController struct {
 }
 
 func (ec *EventController) GetAllEvents(c *fiber.Ctx) error {
+	page := utils.PageOrDefault(c.Query("page"), 1)
+	limit := utils.LimitOrDefault(c.Query("limit"), 12)
 
-	events, error := ec.EventUseCase.GetAllEvents()
+	events, error := ec.EventUseCase.GetAllEvents(page, limit)
 	if error != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": error.Error(),
@@ -56,7 +58,10 @@ func (ec *EventController) GetEventsFiltered(c *fiber.Ctx) error {
 	state := c.Query("state")
 	date := c.Query("date")
 
-	result, error := ec.EventUseCase.GetEventsFiltered(date, state, title)
+	page := utils.PageOrDefault(c.Query("page"), 1)
+	limit := utils.LimitOrDefault(c.Query("limit"), 12)
+
+	result, error := ec.EventUseCase.GetEventsFiltered(date, state, title, page, limit)
 	if error != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": error.Error(),
@@ -112,7 +117,7 @@ func (ec *EventController) SubscribeUserToEvent(c *fiber.Ctx) error {
 		})
 	}
 
-	events, err := ec.UserUseCase.GetEventsSubscribed(subscription.User, "")
+	events, err := ec.UserUseCase.GetEventsSubscribed(subscription.User, "", 1, 20)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": err.Error(),
@@ -126,13 +131,17 @@ func (ec *EventController) SubscribeUserToEvent(c *fiber.Ctx) error {
 }
 
 func (ec *EventController) GetEventsSubscribedUser(c *fiber.Ctx) error {
+
+	page := utils.PageOrDefault(c.Query("page"), 1)
+	limit := utils.LimitOrDefault(c.Query("limit"), 12)
+
 	id, err := strconv.ParseInt(c.Params("id"), 10, 64)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "invalid id",
 		})
 	}
-	events, err := ec.UserUseCase.GetEventsSubscribed(int(id), c.Query("state"))
+	events, err := ec.UserUseCase.GetEventsSubscribed(int(id), c.Query("state"), page, limit)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": err.Error(),

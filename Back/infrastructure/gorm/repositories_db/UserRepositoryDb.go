@@ -6,6 +6,7 @@ import (
 	"github.com/franBarrientos/infrastructure/gorm/entities_db"
 	"github.com/franBarrientos/infrastructure/gorm/mappers_db"
 	"gorm.io/gorm"
+	"time"
 )
 
 type UserRepositoryDb struct {
@@ -49,4 +50,26 @@ func (u UserRepositoryDb) GetUserById(id int) (domain.User, error) {
 	}
 	return mappers_db.UserEntityToUserDomain(&user), nil
 
+}
+
+func (u UserRepositoryDb) GetEventsSubscribed(idUser int, state string, page int, limit int) ([]domain.Event, error) {
+	var events []domain.Event
+	var user entities_db.User
+	result := u.database.Preload("EventsSubscribed").Preload("EventsSubscribed.Place").Preload("EventsSubscribed.Organizer").Preload("EventsSubscribed.Organizer.PersonalData").Preload("PersonalData").Where("id = ?", idUser).First(&user)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	for _, e := range user.EventsSubscribed {
+		if state == "active" && e.Date.After(time.Now()) {
+			events = append(events, mappers_db.EventEntityToEventDomain(&e))
+		}
+		if state == "completed" && e.Date.Before(time.Now()) {
+			events = append(events, mappers_db.EventEntityToEventDomain(&e))
+		}
+		if state == "" {
+			events = append(events, mappers_db.EventEntityToEventDomain(&e))
+		}
+	}
+
+	return events, nil
 }

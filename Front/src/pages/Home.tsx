@@ -4,12 +4,19 @@ import {toast} from "react-toastify"
 import {EventDTO} from "../api/dtos/output.ts"
 import EventCard from "../components/EventCard.tsx"
 import {CustomModal} from "../components/CustomModal.tsx"
-import {alertLoginModalSubject, idEventShowing, showDetailsModalSubject,} from "../utils/subjectsRx.ts"
+import {
+    alertLoginModalSubject,
+    idEventShowing,
+    pageToSkipSubject,
+    showDetailsModalSubject,
+} from "../utils/subjectsRx.ts"
 import ModalDetailEvent from "../components/ModalDetailEvent.tsx"
 import {useNavigate} from "react-router-dom"
 import {FieldValues, SubmitHandler, useForm} from "react-hook-form"
 import CardSkeleton from "../components/CardSkeleton.tsx";
 import 'react-loading-skeleton/dist/skeleton.css'
+import Pagination from "../components/Pagination.tsx";
+import useApp from "../hooks/useApp.tsx";
 
 export default function Home() {
     const [events, setEvents] = useState<EventDTO[]>([])
@@ -17,22 +24,28 @@ export default function Home() {
     const [idDetailsModalOpen, setIdDetailsModalOpen] = useState<number>(0)
     const [alertLoginModal, setAlertLoginModal] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
-    const {register, handleSubmit} = useForm()
+    const {register, handleSubmit, getValues} = useForm()
+    const [currentPage, setCurrentPage] = useState(1)
+    const {isFilter, setIsFilter} = useApp()
 
     //hoks
     const navigate = useNavigate()
 
-    useEffect(() => {
-        getAllEventsPublished()
+    const getAllEvents = (id: number = 1) => {
+        getAllEventsPublished(id)
             .then((r) => {
                 setEvents(r)
                 setTimeout(() => {
-                        setIsLoading(false)
+                    setIsLoading(false)
                 }, 1000)
             })
             .catch(() => {
                 toast("Something went wrong")
             })
+    }
+
+    useEffect(() => {
+        getAllEvents()
     }, [])
 
     //RxSubjects
@@ -49,12 +62,42 @@ export default function Home() {
             setAlertLoginModal(value)
         })
 
+        const listenToCurrentPage = pageToSkipSubject.getSubject.subscribe((value) => {
+            setCurrentPage(value)
+            if (isFilter) {
+                console.log("ENTROOO")
+                const data = getValues();
+                const dateFormatted =
+                    data.date != "" ? new Date(data.date).toISOString() : ""
+                GetEventsFiltered(data.title, dateFormatted, data.state, value)
+                    .then((r) => {
+                        setEvents(r)
+                        setTimeout(() => {
+                            setIsLoading(false)
+                        }, 1000)
+                    })
+                    .catch(() => {
+                        toast("Something went wrong")
+                    })
+
+                } else {
+                getAllEvents(value)
+                }
+            }
+        )
+
+
         return () => {
             subscribe.unsubscribe()
             subscribe2.unsubscribe()
             subscribe3.unsubscribe()
+            listenToCurrentPage.unsubscribe()
         }
     }, [detailsModalIsOpen, idDetailsModalOpen, alertLoginModal])
+
+
+
+
 
     const handleFilter = (data: {
         title: string
@@ -62,9 +105,11 @@ export default function Home() {
         state: string
     }) => {
         setIsLoading(true)
+        setCurrentPage(1)
+        setIsFilter(true)
         const dateFormatted =
             data.date != "" ? new Date(data.date).toISOString() : ""
-        GetEventsFiltered(data.title, dateFormatted, data.state)
+        GetEventsFiltered(data.title, dateFormatted, data.state, 1)
             .then((r) => {
                 setEvents(r)
                 setTimeout(() => {
@@ -76,7 +121,6 @@ export default function Home() {
             })
     }
 
-    console.log(events.length)
 
     return (
         <>
@@ -163,6 +207,9 @@ export default function Home() {
                             </>
                             )}
                         { !isLoading && events.map((event) => <EventCard {...event} />)}
+                        <div className="mx-auto ">
+                            <Pagination currentPage={currentPage} />
+                        </div>
                     </div>
                 </div>
             </section>

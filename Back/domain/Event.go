@@ -18,13 +18,13 @@ type Event struct {
 }
 
 type IEventUseCase interface {
-	GetAllEvents() ([]output.EventDTO, error)
+	GetAllEvents(page int, limit int) ([]output.EventDTO, error)
 
 	CreateEvent(event *input.EventAddDTO) (output.EventDTO, error)
 
 	UpdateEvent(id int, event *map[string]interface{}) (output.EventDTO, error)
 
-	GetEventsFiltered(date string, state string, title string) ([]output.EventDTO, error)
+	GetEventsFiltered(date string, state string, title string, page int, limit int) ([]output.EventDTO, error)
 
 	SubscribeToEvent(subscribe *input.SubscribeAddDTO) error
 }

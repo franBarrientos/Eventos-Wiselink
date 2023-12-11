@@ -22,9 +22,9 @@ func NewEventRepositoryDb(db *gorm.DB) repositories.IEventRepository {
 	}
 }
 
-func (ev EventRepositoryDb) GetAllEvents() ([]domain.Event, error) {
+func (ev EventRepositoryDb) GetAllEvents(page int, limit int) ([]domain.Event, error) {
 	var events []entities_db.Event
-	result := ev.database.Preload("Organizer").Preload("Organizer.PersonalData").Preload("Place").Find(&events)
+	result := ev.database.Offset((page - 1) * limit).Limit(limit).Preload("Organizer").Preload("Organizer.PersonalData").Preload("Place").Find(&events)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -46,7 +46,7 @@ func (ev EventRepositoryDb) GetEventById(id int) (domain.Event, error) {
 	return mappers_db.EventEntityToEventDomain(&event), nil
 }
 
-func (ev EventRepositoryDb) GetEventsFiltered(date string, state string, title string) ([]domain.Event, error) {
+func (ev EventRepositoryDb) GetEventsFiltered(date string, state string, title string, page int, limit int) ([]domain.Event, error) {
 	var events []entities_db.Event
 	query := ev.database.Model(&entities_db.Event{})
 	if title != "" {
@@ -71,7 +71,7 @@ func (ev EventRepositoryDb) GetEventsFiltered(date string, state string, title s
 		query = query.Where("DATE(date) = DATE(?)", formattedDate)
 
 	}
-	if err := query.Where(" state = ?", true).Preload("Organizer").Preload("Organizer.PersonalData").Preload("Place").Find(&events).Error; err != nil {
+	if err := query.Offset((page-1)*limit).Limit(limit).Where(" state = ?", true).Preload("Organizer").Preload("Organizer.PersonalData").Preload("Place").Find(&events).Error; err != nil {
 		return nil, err
 	}
 

@@ -5,7 +5,7 @@ import (
 )
 
 type IEventRepository interface {
-	GetAllEvents() ([]domain.Event, error)
+	GetAllEvents(page int, limit int) ([]domain.Event, error)
 
 	CreateEvent(e *domain.Event) (domain.Event, error)
 
@@ -13,7 +13,7 @@ type IEventRepository interface {
 
 	GetEventById(id int) (domain.Event, error)
 
-	GetEventsFiltered(date string, state string, title string) ([]domain.Event, error)
+	GetEventsFiltered(date string, state string, title string, page int, limit int) ([]domain.Event, error)
 
 	AddSubscribe(subscribe int, event int) error
 }
