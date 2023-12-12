@@ -87,3 +87,24 @@ Para probar los endpoints, el archivo de inicializacion de la base de datos, ya 
 
 
 
+## FAQ
+### Posibles errores
+#### Question 1
+####  /usr/bin/env:"nash\r': No such file or directory 
+
+Para solucionar este error, solo seteamos git con la siguiente configuracion, 
+``
+git config --global core.autocrlf false
+``
+
+#### Question 2
+####  Error al levantar el contenedor el back por primera vez
+
+Solo nos ubicamos en el directorio del proyecto, donde se encuentra el docker-compose, y ejecutamos 
+``
+    docker compose start
+``
+este error se debe a que la base de datos aun no esta lista cuando se levanta el back.
+
+
+
