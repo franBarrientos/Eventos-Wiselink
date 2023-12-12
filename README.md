@@ -67,6 +67,6 @@ Ejecuta los contenedores
 
 
 ## 🔗 Dodumentacion de la API en Postman
-[![portfolio](https://res.cloudinary.com/postman/image/upload/t_team_logo/v1629869194/team//w_10,h_10/2893aede23f01bfcbd2319326bc96a6ed0524eba759745ed6d73405a3a8b67a8)](https://gold-shadow-849289.postman.co/documentation/25276650-1267d226-ff1c-404d-8527-b55f075c879f/publish?workspaceId=aa0a973d-786b-4316-81df-a8f4442ee495)
+[![portfolio](https://res.cloudinary.com/postman/image/upload/t_team_logo/v1629869194/team//w_10,h_10/2893aede23f01bfcbd2319326bc96a6ed0524eba759745ed6d73405a3a8b67a8)]([[https://gold-shadow-849289.postman.co/documentation/25276650-1267d226-ff1c-404d-8527-b55f075c879f/publish?workspaceId=aa0a973d-786b-4316-81df-a8f4442ee495](https://documenter.getpostman.com/view/25276650/2s9YkhiQLY](https://documenter.getpostman.com/view/25276650/2s9YkhiQLY)https://documenter.getpostman.com/view/25276650/2s9YkhiQLY))
 
 
