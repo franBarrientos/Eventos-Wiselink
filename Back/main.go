@@ -22,5 +22,5 @@ func main() {
 	app := fiber.New()
 	app.Use(cors.New())
 	routes.InitRoutes(app, db, env)
-	app.Listen(":3000")
+	app.Listen(":" + env.Port)
 }

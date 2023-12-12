@@ -16,34 +16,36 @@ type EventController struct {
 }
 
 func (ec *EventController) GetAllEvents(c *fiber.Ctx) error {
+	page := utils.PageOrDefault(c.Query("page"), 1)
+	limit := utils.LimitOrDefault(c.Query("limit"), 12)
 
-	events, error := ec.EventUseCase.GetAllEvents()
-	if error != nil {
+	events, err := ec.EventUseCase.GetAllEvents(page, limit)
+	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": error.Error(),
+			"message": err.Error(),
 		})
-	} else {
-		return c.Status(fiber.StatusOK).JSON(events)
 	}
+
+	return c.Status(fiber.StatusOK).JSON(events)
+
 }
 
 func (ec *EventController) CreateEvent(c *fiber.Ctx) error {
 	event := input.EventAddDTO{}
-	c.BodyParser(&event)
 
 	if err := c.BodyParser(&event); err != nil {
-		return err
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err})
 	}
+
 	if err := ec.Validator.Struct(event); err != nil {
-		// Presentar mensajes de error de manera más amigable
 		errorMessages := utils.ParseValidationErrors(err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": errorMessages})
 	}
 
-	eventCreated, error := ec.EventUseCase.CreateEvent(&event)
-	if error != nil {
+	eventCreated, err := ec.EventUseCase.CreateEvent(&event)
+	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": error.Error(),
+			"message": err.Error(),
 		})
 	}
 
@@ -56,10 +58,13 @@ func (ec *EventController) GetEventsFiltered(c *fiber.Ctx) error {
 	state := c.Query("state")
 	date := c.Query("date")
 
-	result, error := ec.EventUseCase.GetEventsFiltered(date, state, title)
-	if error != nil {
+	page := utils.PageOrDefault(c.Query("page"), 1)
+	limit := utils.LimitOrDefault(c.Query("limit"), 12)
+
+	result, err := ec.EventUseCase.GetEventsFiltered(date, state, title, page, limit)
+	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": error.Error(),
+			"message": err.Error(),
 		})
 	}
 	return c.Status(fiber.StatusOK).JSON(result)
@@ -80,10 +85,10 @@ func (ec *EventController) UpdateEvent(c *fiber.Ctx) error {
 		})
 	}
 
-	result, error := ec.EventUseCase.UpdateEvent(int(id), &eventChanges)
-	if error != nil {
+	result, errorFromUpdated := ec.EventUseCase.UpdateEvent(int(id), &eventChanges)
+	if errorFromUpdated != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": error.Error(),
+			"message": errorFromUpdated.Error(),
 		})
 	}
 
@@ -92,11 +97,19 @@ func (ec *EventController) UpdateEvent(c *fiber.Ctx) error {
 }
 
 func (ec *EventController) SubscribeUserToEvent(c *fiber.Ctx) error {
+
 	var subscription input.SubscribeAddDTO
 
 	if errParser := c.BodyParser(&subscription); errParser != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": errParser.Error(),
+		})
+	}
+
+	//if user and id from request params don't match, throw 403
+	if strconv.Itoa(subscription.User) != c.Locals("UserId") {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"message": "Forbidden",
 		})
 	}
 
@@ -108,11 +121,11 @@ func (ec *EventController) SubscribeUserToEvent(c *fiber.Ctx) error {
 	errorSubscribe := ec.EventUseCase.SubscribeToEvent(&subscription)
 	if errorSubscribe != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": error.Error(errorSubscribe),
+			"message": errorSubscribe.Error(),
 		})
 	}
 
-	events, err := ec.UserUseCase.GetEventsSubscribed(subscription.User, "")
+	events, err := ec.UserUseCase.GetEventsSubscribed(subscription.User, "", 1, 20)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": err.Error(),
@@ -126,20 +139,53 @@ func (ec *EventController) SubscribeUserToEvent(c *fiber.Ctx) error {
 }
 
 func (ec *EventController) GetEventsSubscribedUser(c *fiber.Ctx) error {
+
+	page := utils.PageOrDefault(c.Query("page"), 1)
+	limit := utils.LimitOrDefault(c.Query("limit"), 12)
+
 	id, err := strconv.ParseInt(c.Params("id"), 10, 64)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "invalid id",
 		})
 	}
-	events, err := ec.UserUseCase.GetEventsSubscribed(int(id), c.Query("state"))
-	if err != nil {
+
+	//if user and id from request params don't match, throw 403
+	if c.Params("id") != c.Locals("UserId") {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"message": "Forbidden",
+		})
+	}
+
+	events, errorFromGet := ec.UserUseCase.GetEventsSubscribed(int(id), c.Query("state"), page, limit)
+	if errorFromGet != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": err.Error(),
+			"message": errorFromGet.Error(),
 		})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(map[string]interface{}{
 		"eventsSubscribed": events,
 	})
+}
+
+func (ec *EventController) GetSubscribersToEvent(c *fiber.Ctx) error {
+	id, err := strconv.ParseInt(c.Params("id"), 10, 64)
+	page := utils.PageOrDefault(c.Query("page"), 1)
+	limit := utils.LimitOrDefault(c.Query("limit"), 12)
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "invalid id",
+		})
+	}
+	users, errorFromGet := ec.EventUseCase.GetSubscribersToEvent(int(id), page, limit)
+	if errorFromGet != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": errorFromGet.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(users)
+
 }

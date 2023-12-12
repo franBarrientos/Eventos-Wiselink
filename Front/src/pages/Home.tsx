@@ -4,12 +4,18 @@ import {toast} from "react-toastify"
 import {EventDTO} from "../api/dtos/output.ts"
 import EventCard from "../components/EventCard.tsx"
 import {CustomModal} from "../components/CustomModal.tsx"
-import {alertLoginModalSubject, idEventShowing, showDetailsModalSubject,} from "../utils/subjectsRx.ts"
+import {
+    alertLoginModalSubject,
+    idEventShowing,
+    pageToSkipSubject,
+    showDetailsModalSubject,
+} from "../utils/subjectsRx.ts"
 import ModalDetailEvent from "../components/ModalDetailEvent.tsx"
 import {useNavigate} from "react-router-dom"
 import {FieldValues, SubmitHandler, useForm} from "react-hook-form"
 import CardSkeleton from "../components/CardSkeleton.tsx";
 import 'react-loading-skeleton/dist/skeleton.css'
+import Pagination from "../components/Pagination.tsx";
 
 export default function Home() {
     const [events, setEvents] = useState<EventDTO[]>([])
@@ -17,54 +23,17 @@ export default function Home() {
     const [idDetailsModalOpen, setIdDetailsModalOpen] = useState<number>(0)
     const [alertLoginModal, setAlertLoginModal] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
-    const {register, handleSubmit} = useForm()
+    const {register, handleSubmit, getValues} = useForm()
+    const [currentPage, setCurrentPage] = useState(1)
+
+    const [isFilter, setIsFilter] = useState(false)
+
 
     //hoks
     const navigate = useNavigate()
 
-    useEffect(() => {
-        getAllEventsPublished()
-            .then((r) => {
-                setEvents(r)
-                setTimeout(() => {
-                        setIsLoading(false)
-                }, 1000)
-            })
-            .catch(() => {
-                toast("Something went wrong")
-            })
-    }, [])
-
-    //RxSubjects
-    useEffect(() => {
-        const subscribe = showDetailsModalSubject.getSubject.subscribe((value) => {
-            setDetailsModalIsOpen(value)
-        })
-
-        const subscribe2 = idEventShowing.getSubject.subscribe((value) => {
-            setIdDetailsModalOpen(value)
-        })
-
-        const subscribe3 = alertLoginModalSubject.getSubject.subscribe((value) => {
-            setAlertLoginModal(value)
-        })
-
-        return () => {
-            subscribe.unsubscribe()
-            subscribe2.unsubscribe()
-            subscribe3.unsubscribe()
-        }
-    }, [detailsModalIsOpen, idDetailsModalOpen, alertLoginModal])
-
-    const handleFilter = (data: {
-        title: string
-        date: string
-        state: string
-    }) => {
-        setIsLoading(true)
-        const dateFormatted =
-            data.date != "" ? new Date(data.date).toISOString() : ""
-        GetEventsFiltered(data.title, dateFormatted, data.state)
+    const getAllEvents = (id: number = 1) => {
+        getAllEventsPublished(id)
             .then((r) => {
                 setEvents(r)
                 setTimeout(() => {
@@ -76,7 +45,83 @@ export default function Home() {
             })
     }
 
-    console.log(events.length)
+    useEffect(() => {
+        getAllEvents()
+    }, [])
+
+    //RxSubjects
+    useEffect(() => {
+        const subscribeShowDetail = showDetailsModalSubject.getSubject.subscribe((value) => {
+            setDetailsModalIsOpen(value)
+        })
+
+        const subscribeIdEvent = idEventShowing.getSubject.subscribe((value) => {
+            setIdDetailsModalOpen(value)
+        })
+
+        const subscribeAlertModal = alertLoginModalSubject.getSubject.subscribe((value) => {
+            setAlertLoginModal(value)
+        })
+
+        const listenToCurrentPage = pageToSkipSubject.getSubject.subscribe((value) => {
+            setCurrentPage(value)
+            if (isFilter) {
+                console.log({ isFilter })
+                const data = getValues();
+                const dateFormatted =
+                    data.date != "" ? new Date(data.date).toISOString() : ""
+                GetEventsFiltered(data.title, dateFormatted, data.state, value)
+                    .then((r) => {
+                        setEvents(r)
+                        setTimeout(() => {
+                            setIsLoading(false)
+                        }, 1000)
+                    })
+                    .catch(() => {
+                        toast("Something went wrong")
+                    })
+
+                } else {
+                getAllEvents(value)
+                }
+            }
+        )
+
+
+        return () => {
+            subscribeShowDetail.unsubscribe()
+            subscribeIdEvent.unsubscribe()
+            subscribeAlertModal.unsubscribe()
+            listenToCurrentPage.unsubscribe()
+        }
+    }, [detailsModalIsOpen, idDetailsModalOpen, alertLoginModal, isFilter])
+
+
+console.log({isFilterDespues : isFilter})
+
+
+    const handleFilter = (data: {
+        title: string
+        date: string
+        state: string
+    }) => {
+        setIsLoading(true)
+        setCurrentPage(1)
+        setIsFilter(true)
+        const dateFormatted =
+            data.date != "" ? new Date(data.date).toISOString() : ""
+        GetEventsFiltered(data.title, dateFormatted, data.state, 1)
+            .then((r) => {
+                setEvents(r)
+                setTimeout(() => {
+                    setIsLoading(false)
+                }, 1000)
+            })
+            .catch(() => {
+                toast("Something went wrong")
+            })
+    }
+
 
     return (
         <>
@@ -163,6 +208,10 @@ export default function Home() {
                             </>
                             )}
                         { !isLoading && events.map((event) => <EventCard {...event} />)}
+
+                    </div>
+                    <div className="mx-auto w-full flex justify-center mt-10">
+                        <Pagination currentPage={currentPage} />
                     </div>
                 </div>
             </section>

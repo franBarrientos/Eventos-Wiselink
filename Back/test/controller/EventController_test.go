@@ -19,7 +19,17 @@ type MockEventUseCase struct {
 	mock.Mock
 }
 
-func (m *MockEventUseCase) GetAllEvents() ([]output.EventDTO, error) {
+func (m *MockEventUseCase) GetEventsFiltered(date string, state string, title string, page int, limit int) ([]output.EventDTO, error) {
+	args := m.Called()
+	return args.Get(0).([]output.EventDTO), args.Error(1)
+}
+
+func (m *MockEventUseCase) GetSubscribersToEvent(eventId int, page int, limit int) ([]output.UserDTO, error) {
+	args := m.Called()
+	return args.Get(0).([]output.UserDTO), args.Error(1)
+}
+
+func (m *MockEventUseCase) GetAllEvents(page int, limit int) ([]output.EventDTO, error) {
 	args := m.Called()
 	return args.Get(0).([]output.EventDTO), args.Error(1)
 }
@@ -27,11 +37,6 @@ func (m *MockEventUseCase) GetAllEvents() ([]output.EventDTO, error) {
 func (m *MockEventUseCase) CreateEvent(event *input.EventAddDTO) (output.EventDTO, error) {
 	args := m.Called(event)
 	return args.Get(0).(output.EventDTO), args.Error(1)
-}
-
-func (m *MockEventUseCase) GetEventsFiltered(date string, state string, title string) ([]output.EventDTO, error) {
-	args := m.Called(date, state, title)
-	return args.Get(0).([]output.EventDTO), args.Error(1)
 }
 
 func (m *MockEventUseCase) UpdateEvent(id int, event *map[string]interface{}) (output.EventDTO, error) {
@@ -49,8 +54,8 @@ type MockUserUseCase struct {
 	mock.Mock
 }
 
-func (m *MockUserUseCase) GetEventsSubscribed(idUser int, state string) ([]output.EventDTO, error) {
-	args := m.Called(idUser, state)
+func (m *MockUserUseCase) GetEventsSubscribed(idUser int, state string, page int, limit int) ([]output.EventDTO, error) {
+	args := m.Called(idUser, state, page, limit)
 	return args.Get(0).([]output.EventDTO), args.Error(1)
 }
 
@@ -69,6 +74,10 @@ func TestEventController_Methods(t *testing.T) {
 	userUseCase := new(MockUserUseCase)
 	validator := validator.New(validator.WithRequiredStructEnabled())
 
+	eventUseCase.On("GetAllEvents").Return([]output.EventDTO{}, nil)
+
+	userUseCase.On("GetEventsSubscribed", 2, "", 1, 20).Return([]output.EventDTO{}, nil)
+
 	controller := controllers.EventController{
 		EventUseCase: eventUseCase,
 		UserUseCase:  userUseCase,
@@ -80,8 +89,6 @@ func TestEventController_Methods(t *testing.T) {
 
 		c := app.AcquireCtx(&fasthttp.RequestCtx{})
 		defer app.ReleaseCtx(c)
-
-		eventUseCase.On("GetAllEvents").Return([]output.EventDTO{}, nil)
 
 		err := controller.GetAllEvents(c) // Assuming `c` is a valid Fiber context
 
@@ -188,6 +195,8 @@ func TestEventController_Methods(t *testing.T) {
 		c := app.AcquireCtx(&fasthttp.RequestCtx{})
 		defer app.ReleaseCtx(c)
 
+		c.Locals("UserId", "2")
+
 		requestBody := ` {
         "User": 2,
         "Event": 3
@@ -230,7 +239,7 @@ func TestEventController_Methods(t *testing.T) {
 
 		controller.SubscribeUserToEvent(c)
 
-		assert.Equal(t, fiber.StatusInternalServerError, c.Response().StatusCode())
+		assert.Equal(t, fiber.StatusForbidden, c.Response().StatusCode())
 
 	})
 

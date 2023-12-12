@@ -4,7 +4,9 @@ import {createContext, ReactNode, useEffect, useState} from "react";
 interface MyContextType {
     user: UserDTO;
     setUser: (user: UserDTO) => void;
-    cleanUser: () => void;
+    cleanUser: () => void;/*
+    isFilter: boolean;
+    setIsFilter: (value: boolean) => void;*/
 }
 
 
@@ -17,7 +19,9 @@ type AppContextProviderProps = {
 export const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
 
     const [user, setUser] = useState<UserDTO>(null!);
-
+/*
+    const [isFilter, setIsFilter] = useState(false);
+*/
     const setUserContext = (user: UserDTO) => {
         setUser(user);
         localStorage.setItem("user", JSON.stringify(user));
@@ -40,7 +44,9 @@ export const AppContextProvider: React.FC<AppContextProviderProps> = ({children}
     const contextValue: MyContextType = {
         user,
         setUser: setUserContext,
-        cleanUser
+        cleanUser,
+     /*   isFilter,
+        setIsFilter*/
 
     };
 

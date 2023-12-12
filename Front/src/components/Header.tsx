@@ -36,7 +36,7 @@ const Header: FunctionComponent<Props> = () => {
           <span className="ml-3 text-xl">Wiselink Events</span>
         </a>
         <nav className="md:ml-auto flex flex-wrap items-center text-base justify-center">
-          <a onClick={() => navigate("/")} className=" bg-gray-100 border-0 rounded py-1 px-3 focus:outline-none hover:bg-gray-200  mr-5 hover:text-gray-900 cursor-pointer">Home</a>
+          <a onClick={() => navigate(user && user.Role == "ADMIN" ? "/admin" : "/")} className=" bg-gray-100 border-0 rounded py-1 px-3 focus:outline-none hover:bg-gray-200  mr-5 hover:text-gray-900 cursor-pointer">Home</a>
           {user && user.Role == "USER" && <a onClick={() => navigate("/events")} className=" bg-gray-100 border-0 rounded py-1 px-3 focus:outline-none hover:bg-gray-200  mr-5 hover:text-gray-900 cursor-pointer">My Events</a>}
         </nav>
         {user ? (

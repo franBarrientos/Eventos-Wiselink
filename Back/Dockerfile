@@ -12,4 +12,4 @@ RUN go build -o main .
 
 EXPOSE 8080
 
-CMD ["./wait-for-it.sh", "my-mysql-db:3306", "--timeout=30", "--", "go", "run", "main.go"]
+CMD ["./wait-for-it.sh", "my-mysql-db:3306", "--timeout=150", "--", "go", "run", "main.go"]
