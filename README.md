@@ -38,7 +38,7 @@ Por parte del backend, realize una arquitecura por capas o "clean arquitecture",
 
 # Front (React)
 
-La aplicacion frontend fue desarrolada con ReactJS y TailwindCSS, para estilar, tambien hice uso RxJS, para manejar eventos entre distintos componentes, y Context Provider para manejar el estado global de la aplicacion (usuarios, etc), para deployar , hago uso de gnix
+La aplicacion frontend fue desarrolada con ReactJS y TailwindCSS para estilar, tambien hice uso RxJS, para manejar eventos entre distintos componentes, y Context Provider para manejar el estado global de la aplicacion (usuarios, etc), para deployar , hago uso de gninx
 
 
 
