@@ -62,11 +62,10 @@ Ejecuta los contenedores
 ```bash
   docker compose up -d
 ```
-Visita el siguiente link
-``
-http://localhost:5175/
-``
-
+Visita el siguiente link (app front)
+```bash
+  http://localhost:5175/
+```
 
 
 
