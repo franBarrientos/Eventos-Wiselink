@@ -67,6 +67,22 @@ Ejecuta los contenedores
 
 
 ## 🔗 Dodumentacion de la API en Postman
+
+Para probar los endpoints, el archivo de inicializacion de la base de datos, ya inserta dos usuarios, con sus respectivos roles
+
+### Usuario con role ADMIN
+```bash
+  email:  admin@admin.com
+  password  123
+```
+
+
+### Usuario con role USER
+```bash
+  email:  user@user.com
+  password  123
+```
+
 [![portfolio](https://res.cloudinary.com/postman/image/upload/t_team_logo/v1629869194/team//w_10,h_10/2893aede23f01bfcbd2319326bc96a6ed0524eba759745ed6d73405a3a8b67a8)](https://documenter.getpostman.com/view/25276650/2s9YkhiQLY)
 
 
