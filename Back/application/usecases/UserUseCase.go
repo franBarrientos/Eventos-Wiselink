@@ -27,7 +27,6 @@ func (u UserUseCase) GetEventsSubscribed(idUser int, state string, page int, lim
 	events := []output.EventDTO{}
 	for _, event := range eventsDomain {
 		events = append(events, mappers_dto.EventDomainToEventDTO(&event))
-
 	}
 
 	return events, nil

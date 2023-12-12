@@ -24,7 +24,7 @@ func (m *EventRepositoryMock) UpdateEvent(id int, e map[string]interface{}) (dom
 	return args.Get(0).(domain.Event), args.Error(1)
 }
 
-func (m *EventRepositoryMock) GetEventsFiltered(date string, state string, title string) ([]domain.Event, error) {
+func (m *EventRepositoryMock) GetEventsFiltered(date string, state string, title string, page int, limit int) ([]domain.Event, error) {
 	args := m.Called()
 	return args.Get(0).([]domain.Event), args.Error(1)
 }
@@ -42,6 +42,11 @@ func (m *EventRepositoryMock) GetAllEvents(page int, limit int) ([]domain.Event,
 func (m *EventRepositoryMock) GetEventById(id int) (domain.Event, error) {
 	args := m.Called(id)
 	return args.Get(0).(domain.Event), args.Error(1)
+}
+
+func (m *EventRepositoryMock) GetSubscribersToEvent(eventId int, page int, limit int) ([]domain.User, error) {
+	args := m.Called()
+	return args.Get(0).([]domain.User), args.Error(1)
 }
 
 func TestEventUseCase(t *testing.T) {
@@ -100,7 +105,7 @@ func TestEventUseCase(t *testing.T) {
 		assert.NoError(t, errEv)
 		assert.NotNil(t, events)
 
-		eventsFiltered, errFiltered := underTest.GetEventsFiltered("", "", "")
+		eventsFiltered, errFiltered := underTest.GetEventsFiltered("", "", "", 1, 12)
 		assert.NoError(t, errFiltered)
 		assert.NotNil(t, eventsFiltered)
 

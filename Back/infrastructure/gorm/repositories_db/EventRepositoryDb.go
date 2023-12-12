@@ -24,7 +24,12 @@ func NewEventRepositoryDb(db *gorm.DB) repositories.IEventRepository {
 
 func (ev EventRepositoryDb) GetAllEvents(page int, limit int) ([]domain.Event, error) {
 	var events []entities_db.Event
-	result := ev.database.Offset((page - 1) * limit).Limit(limit).Preload("Organizer").Preload("Organizer.PersonalData").Preload("Place").Find(&events)
+	result := ev.database.Offset((page - 1) * limit).
+		Limit(limit).
+		Preload("Organizer").
+		Preload("Organizer.PersonalData").
+		Preload("Place").
+		Find(&events)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -46,7 +51,8 @@ func (ev EventRepositoryDb) GetEventById(id int) (domain.Event, error) {
 	return mappers_db.EventEntityToEventDomain(&event), nil
 }
 
-func (ev EventRepositoryDb) GetEventsFiltered(date string, state string, title string, page int, limit int) ([]domain.Event, error) {
+func (ev EventRepositoryDb) GetEventsFiltered(date string, state string, title string,
+	page int, limit int) ([]domain.Event, error) {
 	var events []entities_db.Event
 	query := ev.database.Model(&entities_db.Event{})
 	if title != "" {
@@ -71,7 +77,13 @@ func (ev EventRepositoryDb) GetEventsFiltered(date string, state string, title s
 		query = query.Where("DATE(date) = DATE(?)", formattedDate)
 
 	}
-	if err := query.Offset((page-1)*limit).Limit(limit).Where(" state = ?", true).Preload("Organizer").Preload("Organizer.PersonalData").Preload("Place").Find(&events).Error; err != nil {
+	if err := query.Offset((page-1)*limit).
+		Limit(limit).
+		Where(" state = ?", true).
+		Preload("Organizer").
+		Preload("Organizer.PersonalData").
+		Preload("Place").
+		Find(&events).Error; err != nil {
 		return nil, err
 	}
 
@@ -84,25 +96,21 @@ func (ev EventRepositoryDb) GetEventsFiltered(date string, state string, title s
 
 func (ev EventRepositoryDb) CreateEvent(e *domain.Event) (domain.Event, error) {
 	evenEntity := mappers_db.EventDomainToEventEntity(e)
-	/*parsedTime, err := time.Parse("2006-01-02T15:04", e["Date"].(string))
-	if err != nil {
-		fmt.Println("Error al parsear la fecha:", err)
-		return domain.Event{}, err
-
-	}
-
-	eventToUpdate.Date = parsedTime*/
 	result := ev.database.Create(&evenEntity)
 	if result.Error != nil {
 		return domain.Event{}, result.Error
-	} else {
-		return mappers_db.EventEntityToEventDomain(&evenEntity), nil
 	}
+
+	return mappers_db.EventEntityToEventDomain(&evenEntity), nil
+
 }
 
 func (ev EventRepositoryDb) UpdateEvent(id int, e map[string]interface{}) (domain.Event, error) {
 	var eventToUpdate entities_db.Event
-	result := ev.database.Preload("Organizer").Preload("Organizer.PersonalData").Preload("Place").First(&eventToUpdate, id)
+	result := ev.database.Preload("Organizer").
+		Preload("Organizer.PersonalData").
+		Preload("Place").
+		First(&eventToUpdate, id)
 	if result.Error != nil {
 		return domain.Event{}, result.Error
 	}
@@ -164,7 +172,8 @@ func (ev EventRepositoryDb) UpdateEvent(id int, e map[string]interface{}) (domai
 func (ev EventRepositoryDb) AddSubscribe(subscribe int, event int) error {
 
 	var eventToSubscribe entities_db.Event
-	result := ev.database.Where("date > NOW() and state = ? and id = ?", true, event).First(&eventToSubscribe, event)
+	result := ev.database.Where("date > NOW() and state = ? and id = ?", true, event).
+		First(&eventToSubscribe, event)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -191,4 +200,28 @@ func (ev EventRepositoryDb) AddSubscribe(subscribe int, event int) error {
 	userToSubscribe.EventsSubscribed = append(userToSubscribe.EventsSubscribed, eventToSubscribe)
 	ev.database.Save(&userToSubscribe)
 	return nil
+}
+
+func (ev EventRepositoryDb) GetSubscribersToEvent(eventId int, page int, limit int) ([]domain.User, error) {
+
+	subscribersEntity := []entities_db.User{}
+	result := ev.database.
+		Offset((page-1)*limit).
+		Limit(limit).
+		Joins("JOIN user_events ON users.id = user_events.user_id").
+		Where("user_events.event_id = ?", eventId).
+		Preload("EventsSubscribed").
+		Preload("EventsSubscribed.Place").
+		Preload("EventsSubscribed.Organizer").
+		Preload("PersonalData").
+		Find(&subscribersEntity)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	subscribersDomain := []domain.User{}
+	for _, subscriber := range subscribersEntity {
+		subscribersDomain = append(subscribersDomain, mappers_db.UserEntityToUserDomain(&subscriber))
+	}
+	return subscribersDomain, nil
 }

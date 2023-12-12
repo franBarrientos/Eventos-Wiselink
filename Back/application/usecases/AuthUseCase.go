@@ -32,17 +32,17 @@ func (u AuthUseCase) RegisterUser(user *input.UserAddDTO) (output.AuthResponse, 
 	user.Password = passwordHashed
 
 	userDomain := mappers_dto.UserAddDTOToUseDomain(user)
-	result, err := u.userRepository.CreateUser(&userDomain)
-	if err != nil {
-		return output.AuthResponse{}, err
+	result, errFromCreate := u.userRepository.CreateUser(&userDomain)
+	if errFromCreate != nil {
+		return output.AuthResponse{}, errFromCreate
 	}
 
-	accesToken, _ := u.tokenService.CreateAccessToken(&result)
+	accessToken, _ := u.tokenService.CreateAccessToken(&result)
 	refreshToken, _ := u.tokenService.CreateRefreshToken(&result)
 	return output.AuthResponse{
 		User: mappers_dto.UserDomainToUserDTO(&result),
 		Token: output.LoginResponse{
-			AccessToken:  accesToken,
+			AccessToken:  accessToken,
 			RefreshToken: refreshToken,
 		},
 	}, nil
@@ -60,13 +60,13 @@ func (u AuthUseCase) LoginUser(credentials *input.LoginDTO) (output.AuthResponse
 		return output.AuthResponse{}, errors.New("credentials are not valid")
 	}
 
-	accesToken, _ := u.tokenService.CreateAccessToken(&result)
+	accessToken, _ := u.tokenService.CreateAccessToken(&result)
 	refreshToken, _ := u.tokenService.CreateRefreshToken(&result)
 
 	return output.AuthResponse{
 		User: mappers_dto.UserDomainToUserDTO(&result),
 		Token: output.LoginResponse{
-			AccessToken:  accesToken,
+			AccessToken:  accessToken,
 			RefreshToken: refreshToken,
 		},
 	}, nil

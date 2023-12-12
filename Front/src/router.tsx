@@ -6,6 +6,7 @@ import Login from "./pages/Login.tsx";
 import Register from "./pages/Register.tsx";
 import MyEvents from "./pages/MyEvents.tsx";
 import Admin from "./pages/Admin.tsx";
+import Subscribers from "./pages/Subscribers.tsx";
 
 const router = createBrowserRouter([
     {
@@ -35,6 +36,16 @@ const router = createBrowserRouter([
             {
                 index: true,
                 element: <Admin />,
+            },
+        ],
+    },
+    {
+        path: "/admin/subscribers/",
+        element: <LayoutHome />,
+        children: [
+            {
+                path: ":id",
+                element: <Subscribers />,
             },
         ],
     },

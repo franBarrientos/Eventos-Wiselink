@@ -30,7 +30,7 @@ func JwtAuthMiddleware(role string, jwtService domain.ITokenService) JwtMiddlewa
 					return c.Status(fiber.StatusForbidden).JSON(&fiber.Map{"error": "Forbidden you does not have access to this resource"})
 				}
 
-				c.Set("x-user-id", idExtracted)
+				c.Locals("UserId", idExtracted)
 				return c.Next()
 			}
 		}

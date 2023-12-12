@@ -12,7 +12,7 @@ import { CustomModal } from "../components/CustomModal.tsx"
 import {
   alertLoginModalSubject,
   idEventEdit,
-  idEventShowing,
+  idEventShowing, pageToSkipSubject,
   showDetailsModalSubject,
 } from "../utils/subjectsRx.ts"
 import ModalDetailEventAdmin from "../components/ModalDetailEventAdmin.tsx"
@@ -30,11 +30,23 @@ export default function Admin() {
   const [editModal, setEditModal] = useState(false)
   const [createModal, setCreateModal] = useState(false)
 
-  const { register, handleSubmit } = useForm()
+  const { register, handleSubmit, getValues } = useForm()
   const { register: registerEdit, handleSubmit: handleSubmitEdit, reset } = useForm()
   const { register: registerCreate, handleSubmit: handleSubmitCreate } =
     useForm()
   const [eventToEdit, setEventToEdit] = useState<EventDTO>()
+  const [currentPage, setCurrentPage] = useState(1)
+  const [isFilter, setIsFilter] = useState(false)
+
+  const getEventsAdmin = (id: number = 1) => {
+    GetEventsAdmin(id)
+        .then((r) => {
+          setEvents(r)
+        })
+        .catch(() => {
+          toast("Something went wrong")
+        })
+  }
 
   useEffect(() => {
     if (!localStorage.getItem("token")) {
@@ -52,15 +64,7 @@ export default function Admin() {
       return
     }
 
-    console.log(localStorage.getItem("token"))
-
-    GetEventsAdmin()
-      .then((r) => {
-        setEvents(r)
-      })
-      .catch(() => {
-        toast("Something went wrong")
-      })
+    getEventsAdmin()
   }, [])
 
   //RxSubjects
@@ -82,19 +86,44 @@ export default function Admin() {
       setEventToEdit(events?.find((e) => e.Id == value))
     })
 
+
+    const listenToCurrentPage = pageToSkipSubject.getSubject.subscribe((value) => {
+          setCurrentPage(value)
+          if (isFilter) {
+            console.log({ isFilter })
+            const data = getValues();
+            const dateFormatted =
+                data.date != "" ? new Date(data.date).toISOString() : ""
+            GetEventsFiltered(data.title, dateFormatted, data.state, value)
+                .then((r) => {
+                  setEvents(r)
+                })
+                .catch(() => {
+                  toast("Something went wrong")
+                })
+
+          } else {
+            getEventsAdmin(value)
+          }
+        }
+    )
+
     return () => {
       subscribe.unsubscribe()
       subscribe2.unsubscribe()
       subscribe3.unsubscribe()
       subscribe4.unsubscribe()
+      listenToCurrentPage.unsubscribe()
     }
-  }, [detailsModalIsOpen, idDetailsModalOpen, editModal, eventToEdit])
+  }, [detailsModalIsOpen, idDetailsModalOpen, editModal, eventToEdit, isFilter])
 
   const handleFilter = (data: {
     title: string
     date: string
     state: string
   }) => {
+    setCurrentPage(1)
+    setIsFilter(true)
     const dateFormatted =
       data.date != "" ? new Date(data.date).toISOString() : ""
     GetEventsFiltered(data.title, dateFormatted, data.state)
@@ -170,6 +199,17 @@ export default function Admin() {
               )}
               className="w-5/6 flex flex-col gap-5 md:gap-1 md:flex-row justify-center my-8 items-center space-x-4"
             >
+              <button
+                  onClick={() => {
+                    setCurrentPage(1)
+                    setIsFilter(false)
+                    getEventsAdmin()
+                  }}
+                  type={"button"}
+                  className="bg-indigo-500 text-white px-3 py-1 rounded"
+              >
+                Clean Filters
+              </button>
               {/* Filtro por nombre */}
               <input
                 type="text"
@@ -230,7 +270,9 @@ export default function Admin() {
           <div className="flex flex-wrap -mx-4  -my-8">
             {events?.map((event) => <EventCard {...event} />)}
           </div>
-            <Pagination />
+          <div className="mx-auto w-full flex justify-center mt-10">
+            <Pagination currentPage={currentPage} />
+          </div>
         </div>
       </section>
 

@@ -16,7 +16,6 @@ import {FieldValues, SubmitHandler, useForm} from "react-hook-form"
 import CardSkeleton from "../components/CardSkeleton.tsx";
 import 'react-loading-skeleton/dist/skeleton.css'
 import Pagination from "../components/Pagination.tsx";
-import useApp from "../hooks/useApp.tsx";
 
 export default function Home() {
     const [events, setEvents] = useState<EventDTO[]>([])
@@ -26,7 +25,9 @@ export default function Home() {
     const [isLoading, setIsLoading] = useState(true)
     const {register, handleSubmit, getValues} = useForm()
     const [currentPage, setCurrentPage] = useState(1)
-    const {isFilter, setIsFilter} = useApp()
+
+    const [isFilter, setIsFilter] = useState(false)
+
 
     //hoks
     const navigate = useNavigate()
@@ -50,22 +51,22 @@ export default function Home() {
 
     //RxSubjects
     useEffect(() => {
-        const subscribe = showDetailsModalSubject.getSubject.subscribe((value) => {
+        const subscribeShowDetail = showDetailsModalSubject.getSubject.subscribe((value) => {
             setDetailsModalIsOpen(value)
         })
 
-        const subscribe2 = idEventShowing.getSubject.subscribe((value) => {
+        const subscribeIdEvent = idEventShowing.getSubject.subscribe((value) => {
             setIdDetailsModalOpen(value)
         })
 
-        const subscribe3 = alertLoginModalSubject.getSubject.subscribe((value) => {
+        const subscribeAlertModal = alertLoginModalSubject.getSubject.subscribe((value) => {
             setAlertLoginModal(value)
         })
 
         const listenToCurrentPage = pageToSkipSubject.getSubject.subscribe((value) => {
             setCurrentPage(value)
             if (isFilter) {
-                console.log("ENTROOO")
+                console.log({ isFilter })
                 const data = getValues();
                 const dateFormatted =
                     data.date != "" ? new Date(data.date).toISOString() : ""
@@ -88,15 +89,15 @@ export default function Home() {
 
 
         return () => {
-            subscribe.unsubscribe()
-            subscribe2.unsubscribe()
-            subscribe3.unsubscribe()
+            subscribeShowDetail.unsubscribe()
+            subscribeIdEvent.unsubscribe()
+            subscribeAlertModal.unsubscribe()
             listenToCurrentPage.unsubscribe()
         }
-    }, [detailsModalIsOpen, idDetailsModalOpen, alertLoginModal])
+    }, [detailsModalIsOpen, idDetailsModalOpen, alertLoginModal, isFilter])
 
 
-
+console.log({isFilterDespues : isFilter})
 
 
     const handleFilter = (data: {
@@ -207,9 +208,10 @@ export default function Home() {
                             </>
                             )}
                         { !isLoading && events.map((event) => <EventCard {...event} />)}
-                        <div className="mx-auto ">
-                            <Pagination currentPage={currentPage} />
-                        </div>
+
+                    </div>
+                    <div className="mx-auto w-full flex justify-center mt-10">
+                        <Pagination currentPage={currentPage} />
                     </div>
                 </div>
             </section>

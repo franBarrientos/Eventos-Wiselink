@@ -16,4 +16,6 @@ type IEventRepository interface {
 	GetEventsFiltered(date string, state string, title string, page int, limit int) ([]domain.Event, error)
 
 	AddSubscribe(subscribe int, event int) error
+
+	GetSubscribersToEvent(eventId int, page int, limit int) ([]domain.User, error)
 }

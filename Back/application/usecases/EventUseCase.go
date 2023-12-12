@@ -53,9 +53,8 @@ func (e EventUseCase) CreateEvent(event *input.EventAddDTO) (output.EventDTO, er
 
 	if err != nil {
 		return output.EventDTO{}, err
-	} else {
-		return mappers_dto.EventDomainToEventDTO(&result), nil
 	}
+	return mappers_dto.EventDomainToEventDTO(&result), nil
 
 }
 
@@ -76,4 +75,17 @@ func (e EventUseCase) SubscribeToEvent(subscribe *input.SubscribeAddDTO) error {
 		return err
 	}
 	return nil
+}
+
+func (e EventUseCase) GetSubscribersToEvent(eventId int, page int, limit int) ([]output.UserDTO, error) {
+
+	subscribersDomain, err := e.eventRepository.GetSubscribersToEvent(eventId, page, limit)
+	if err != nil {
+		return nil, err
+	}
+	subscribersDto := []output.UserDTO{}
+	for _, event := range subscribersDomain {
+		subscribersDto = append(subscribersDto, mappers_dto.UserDomainToUserDTO(&event))
+	}
+	return subscribersDto, nil
 }

@@ -27,4 +27,6 @@ type IEventUseCase interface {
 	GetEventsFiltered(date string, state string, title string, page int, limit int) ([]output.EventDTO, error)
 
 	SubscribeToEvent(subscribe *input.SubscribeAddDTO) error
+
+	GetSubscribersToEvent(eventId int, page int, limit int) ([]output.UserDTO, error)
 }
