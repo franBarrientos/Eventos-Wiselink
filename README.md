@@ -69,7 +69,7 @@ Visita el siguiente link (app front)
 
 
 
-## 🔗 Dodumentacion de la API en Postman
+## 🔗 Documentacion de la API en Postman
 
 Para probar los endpoints, el archivo de inicializacion de la base de datos, ya inserta dos usuarios, con sus respectivos roles
 
