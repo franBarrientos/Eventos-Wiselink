@@ -22,7 +22,7 @@ func NewEventRepositoryDb(db *gorm.DB) repositories.IEventRepository {
 	}
 }
 
-func (ev EventRepositoryDb) GetAllEvents(page int, limit int) ([]domain.Event, error) {
+func (ev *EventRepositoryDb) GetAllEvents(page int, limit int) ([]domain.Event, error) {
 	var events []entities_db.Event
 	result := ev.database.Offset((page - 1) * limit).
 		Limit(limit).
@@ -41,7 +41,7 @@ func (ev EventRepositoryDb) GetAllEvents(page int, limit int) ([]domain.Event, e
 	return dtosEvents, nil
 }
 
-func (ev EventRepositoryDb) GetEventById(id int) (domain.Event, error) {
+func (ev *EventRepositoryDb) GetEventById(id int) (domain.Event, error) {
 	var event entities_db.Event
 	result := ev.database.Find(&event, id)
 	if result.Error != nil {
@@ -51,7 +51,7 @@ func (ev EventRepositoryDb) GetEventById(id int) (domain.Event, error) {
 	return mappers_db.EventEntityToEventDomain(&event), nil
 }
 
-func (ev EventRepositoryDb) GetEventsFiltered(date string, state string, title string,
+func (ev *EventRepositoryDb) GetEventsFiltered(date string, state string, title string,
 	page int, limit int) ([]domain.Event, error) {
 	var events []entities_db.Event
 	query := ev.database.Model(&entities_db.Event{})
@@ -94,7 +94,7 @@ func (ev EventRepositoryDb) GetEventsFiltered(date string, state string, title s
 	return dtosEvents, nil
 }
 
-func (ev EventRepositoryDb) CreateEvent(e *domain.Event) (domain.Event, error) {
+func (ev *EventRepositoryDb) CreateEvent(e *domain.Event) (domain.Event, error) {
 	evenEntity := mappers_db.EventDomainToEventEntity(e)
 	result := ev.database.Create(&evenEntity)
 	if result.Error != nil {
@@ -105,7 +105,7 @@ func (ev EventRepositoryDb) CreateEvent(e *domain.Event) (domain.Event, error) {
 
 }
 
-func (ev EventRepositoryDb) UpdateEvent(id int, e map[string]interface{}) (domain.Event, error) {
+func (ev *EventRepositoryDb) UpdateEvent(id int, e map[string]interface{}) (domain.Event, error) {
 	var eventToUpdate entities_db.Event
 	result := ev.database.Preload("Organizer").
 		Preload("Organizer.PersonalData").
@@ -169,7 +169,7 @@ func (ev EventRepositoryDb) UpdateEvent(id int, e map[string]interface{}) (domai
 
 }
 
-func (ev EventRepositoryDb) AddSubscribe(subscribe int, event int) error {
+func (ev *EventRepositoryDb) AddSubscribe(subscribe int, event int) error {
 
 	var eventToSubscribe entities_db.Event
 	result := ev.database.Where("date > NOW() and state = ? and id = ?", true, event).
@@ -202,7 +202,7 @@ func (ev EventRepositoryDb) AddSubscribe(subscribe int, event int) error {
 	return nil
 }
 
-func (ev EventRepositoryDb) GetSubscribersToEvent(eventId int, page int, limit int) ([]domain.User, error) {
+func (ev *EventRepositoryDb) GetSubscribersToEvent(eventId int, page int, limit int) ([]domain.User, error) {
 
 	subscribersEntity := []entities_db.User{}
 	result := ev.database.

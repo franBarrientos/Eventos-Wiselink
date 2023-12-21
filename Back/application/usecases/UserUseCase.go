@@ -18,7 +18,7 @@ func NewUserUseCase(userRepository repositories.IUserRepository) domain.IUserUse
 	}
 }
 
-func (u UserUseCase) GetEventsSubscribed(idUser int, state string, page int, limit int) ([]output.EventDTO, error) {
+func (u *UserUseCase) GetEventsSubscribedByUserID(idUser int, state string, page int, limit int) ([]output.EventDTO, error) {
 
 	eventsDomain, err := u.userRepository.GetEventsSubscribed(idUser, state, page, limit)
 	if err != nil {

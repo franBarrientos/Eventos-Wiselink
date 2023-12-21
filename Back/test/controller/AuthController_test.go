@@ -27,7 +27,6 @@ func (m *AuthUseCaseMock) RegisterUser(user *input.UserAddDTO) (output.AuthRespo
 }
 
 func TestAuthController(t *testing.T) {
-
 	//mock
 	mockAuthUseCase := new(AuthUseCaseMock)
 	mockAuthUseCase.On("LoginUser", &input.LoginDTO{
@@ -57,6 +56,7 @@ func TestAuthController(t *testing.T) {
 	}
 
 	t.Run("Success Login", func(t *testing.T) {
+
 		app := fiber.New()
 
 		c := app.AcquireCtx(&fasthttp.RequestCtx{})

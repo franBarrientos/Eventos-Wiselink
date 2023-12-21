@@ -15,5 +15,5 @@ type User struct {
 }
 
 type IUserUseCase interface {
-	GetEventsSubscribed(idUser int, state string, page int, limit int) ([]output.EventDTO, error)
+	GetEventsSubscribedByUserID(idUser int, state string, page int, limit int) ([]output.EventDTO, error)
 }

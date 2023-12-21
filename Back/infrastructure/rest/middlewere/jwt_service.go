@@ -71,28 +71,6 @@ func (s *JwtService) IsAuthorized(requestToken string) (bool, error) {
 	return true, nil
 }
 
-/*
-	func (s *JwtService) ExtractIDFromToken(requestToken string) (string, error) {
-		token, err := jwt.Parse(requestToken, func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-			}
-			return []byte(s.AccessTokenSecret), nil
-		})
-
-		if err != nil {
-			return "", err
-		}
-
-		claims, ok := token.Claims.(jwt.MapClaims)
-
-		if !ok && !token.Valid {
-			return "", fmt.Errorf("Invalid Token")
-		}
-
-		return claims["ID"].(string), nil
-	}
-*/
 func (s *JwtService) ExtractRoleAndIDFromToken(requestToken string) (string, string, error) {
 	token, err := jwt.Parse(requestToken, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

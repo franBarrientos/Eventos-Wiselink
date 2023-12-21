@@ -19,7 +19,7 @@ func NewUserRepositoryDb(db *gorm.DB) repositories.IUserRepository {
 	}
 }
 
-func (u UserRepositoryDb) CreateUser(user *domain.User) (domain.User, error) {
+func (u *UserRepositoryDb) CreateUser(user *domain.User) (domain.User, error) {
 	userToCreate := mappers_db.UserDomainToUserEntity(user)
 	result := u.database.Create(&userToCreate)
 
@@ -31,7 +31,7 @@ func (u UserRepositoryDb) CreateUser(user *domain.User) (domain.User, error) {
 
 }
 
-func (u UserRepositoryDb) GetUserByEmail(email string) (domain.User, error) {
+func (u *UserRepositoryDb) GetUserByEmail(email string) (domain.User, error) {
 	var user entities_db.User
 	result := u.database.Where("email = ?", email).
 		Preload("PersonalData").
@@ -48,7 +48,7 @@ func (u UserRepositoryDb) GetUserByEmail(email string) (domain.User, error) {
 
 }
 
-func (u UserRepositoryDb) GetUserById(id int) (domain.User, error) {
+func (u *UserRepositoryDb) GetUserById(id int) (domain.User, error) {
 	var user entities_db.User
 	result := u.database.Preload("EventsSubscribed").
 		Preload("EventsSubscribed.Place").
@@ -64,7 +64,7 @@ func (u UserRepositoryDb) GetUserById(id int) (domain.User, error) {
 
 }
 
-func (u UserRepositoryDb) GetEventsSubscribed(idUser int, state string, page int, limit int) ([]domain.Event, error) {
+func (u *UserRepositoryDb) GetEventsSubscribed(idUser int, state string, page int, limit int) ([]domain.Event, error) {
 	events := []entities_db.Event{}
 
 	query := u.database.Model(&entities_db.User{}).

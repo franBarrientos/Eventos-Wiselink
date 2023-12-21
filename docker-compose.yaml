@@ -12,19 +12,26 @@ services:
       MYSQL_PASSWORD: 45645852
     volumes:
       - ./dbfiles:/docker-entrypoint-initdb.d
-
+    networks:
+      - backend
   my-go-app:
     container_name: back
+    image: franbarrientos/eventos-wiselink-back
     ports:
       - "8080:8080"
-    build:
-      context: ./Back
-
+    networks:
+      - backend
   front:
     container_name: front
+    image: franbarrientos/eventos-wiselink-front
     ports:
       - "5175:80"
     depends_on:
       - my-go-app
-    build:
-      context: ./Front
+    networks:
+      - frontend
+      - backend
+
+networks:
+  frontend:
+  backend:

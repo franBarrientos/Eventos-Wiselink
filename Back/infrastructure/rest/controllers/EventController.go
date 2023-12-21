@@ -125,7 +125,7 @@ func (ec *EventController) SubscribeUserToEvent(c *fiber.Ctx) error {
 		})
 	}
 
-	events, err := ec.UserUseCase.GetEventsSubscribed(subscription.User, "", 1, 20)
+	events, err := ec.UserUseCase.GetEventsSubscribedByUserID(subscription.User, "", 1, 20)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": err.Error(),
@@ -157,7 +157,7 @@ func (ec *EventController) GetEventsSubscribedUser(c *fiber.Ctx) error {
 		})
 	}
 
-	events, errorFromGet := ec.UserUseCase.GetEventsSubscribed(int(id), c.Query("state"), page, limit)
+	events, errorFromGet := ec.UserUseCase.GetEventsSubscribedByUserID(int(id), c.Query("state"), page, limit)
 	if errorFromGet != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": errorFromGet.Error(),

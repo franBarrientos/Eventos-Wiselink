@@ -20,7 +20,7 @@ type MockEventUseCase struct {
 }
 
 func (m *MockEventUseCase) GetEventsFiltered(date string, state string, title string, page int, limit int) ([]output.EventDTO, error) {
-	args := m.Called()
+	args := m.Called(date, state, title, page, limit)
 	return args.Get(0).([]output.EventDTO), args.Error(1)
 }
 
@@ -54,19 +54,9 @@ type MockUserUseCase struct {
 	mock.Mock
 }
 
-func (m *MockUserUseCase) GetEventsSubscribed(idUser int, state string, page int, limit int) ([]output.EventDTO, error) {
+func (m *MockUserUseCase) GetEventsSubscribedByUserID(idUser int, state string, page int, limit int) ([]output.EventDTO, error) {
 	args := m.Called(idUser, state, page, limit)
 	return args.Get(0).([]output.EventDTO), args.Error(1)
-}
-
-// MockValidator mocks the validator.Validate interface
-type MockValidator struct {
-	mock.Mock
-}
-
-func (m *MockValidator) Struct(s interface{}) error {
-	args := m.Called(s)
-	return args.Error(0)
 }
 
 func TestEventController_Methods(t *testing.T) {
@@ -76,7 +66,7 @@ func TestEventController_Methods(t *testing.T) {
 
 	eventUseCase.On("GetAllEvents").Return([]output.EventDTO{}, nil)
 
-	userUseCase.On("GetEventsSubscribed", 2, "", 1, 20).Return([]output.EventDTO{}, nil)
+	userUseCase.On("GetEventsSubscribedByUserID", 2, "", 1, 20).Return([]output.EventDTO{}, nil)
 
 	controller := controllers.EventController{
 		EventUseCase: eventUseCase,
@@ -90,7 +80,7 @@ func TestEventController_Methods(t *testing.T) {
 		c := app.AcquireCtx(&fasthttp.RequestCtx{})
 		defer app.ReleaseCtx(c)
 
-		err := controller.GetAllEvents(c) // Assuming `c` is a valid Fiber context
+		err := controller.GetAllEvents(c)
 
 		// Assert the results
 		assert.NoError(t, err)
@@ -210,7 +200,7 @@ func TestEventController_Methods(t *testing.T) {
 			Event: 3,
 		}).Return(nil)
 
-		userUseCase.On("GetEventsSubscribed", 2, "").Return([]output.EventDTO{}, nil)
+		userUseCase.On("GetEventsSubscribedByUserID", 2, "").Return([]output.EventDTO{}, nil)
 
 		controller.SubscribeUserToEvent(c)
 
@@ -237,6 +227,26 @@ func TestEventController_Methods(t *testing.T) {
 			Event: 4,
 		}).Return(errors.New(" error"))
 
+		controller.SubscribeUserToEvent(c)
+
+		assert.Equal(t, fiber.StatusForbidden, c.Response().StatusCode())
+
+	})
+
+	t.Run("Forbidden Subscribe User", func(t *testing.T) {
+		app := fiber.New()
+
+		c := app.AcquireCtx(&fasthttp.RequestCtx{})
+		defer app.ReleaseCtx(c)
+
+		// Mock data for the request
+		requestBody := ` {
+        "User": 4,
+        "Event": 4
+    	}`
+		c.Locals("UserId", "1")
+		c.Request().Header.SetContentType("application/json")
+		c.Request().SetBodyString(requestBody)
 		controller.SubscribeUserToEvent(c)
 
 		assert.Equal(t, fiber.StatusForbidden, c.Response().StatusCode())

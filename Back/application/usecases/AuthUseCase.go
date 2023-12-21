@@ -23,7 +23,7 @@ func NewAuthUseCase(userRepository repositories.IUserRepository, tokenService do
 	}
 }
 
-func (u AuthUseCase) RegisterUser(user *input.UserAddDTO) (output.AuthResponse, error) {
+func (u *AuthUseCase) RegisterUser(user *input.UserAddDTO) (output.AuthResponse, error) {
 	passwordHashed, err := hashPassword(user.Password)
 	if err != nil {
 		return output.AuthResponse{}, err
@@ -31,7 +31,7 @@ func (u AuthUseCase) RegisterUser(user *input.UserAddDTO) (output.AuthResponse, 
 
 	user.Password = passwordHashed
 
-	userDomain := mappers_dto.UserAddDTOToUseDomain(user)
+	userDomain := mappers_dto.UserAddDTOToUserDomain(user)
 	result, errFromCreate := u.userRepository.CreateUser(&userDomain)
 	if errFromCreate != nil {
 		return output.AuthResponse{}, errFromCreate
@@ -49,7 +49,7 @@ func (u AuthUseCase) RegisterUser(user *input.UserAddDTO) (output.AuthResponse, 
 
 }
 
-func (u AuthUseCase) LoginUser(credentials *input.LoginDTO) (output.AuthResponse, error) {
+func (u *AuthUseCase) LoginUser(credentials *input.LoginDTO) (output.AuthResponse, error) {
 
 	result, err := u.userRepository.GetUserByEmail(credentials.Email)
 	if err != nil {
@@ -74,7 +74,6 @@ func (u AuthUseCase) LoginUser(credentials *input.LoginDTO) (output.AuthResponse
 }
 
 func hashPassword(password string) (string, error) {
-	// Generar un hash de la contraseña
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return "", err

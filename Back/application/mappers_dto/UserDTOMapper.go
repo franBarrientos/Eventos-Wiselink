@@ -23,7 +23,7 @@ func UserDomainToUserDTO(user *domain.User) output.UserDTO {
 	}
 }
 
-func UserAddDTOToUseDomain(user *input.UserAddDTO) domain.User {
+func UserAddDTOToUserDomain(user *input.UserAddDTO) domain.User {
 	return domain.User{
 		FirstName: user.FirstName,
 		LastName:  user.LastName,

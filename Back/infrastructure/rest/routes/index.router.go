@@ -12,6 +12,7 @@ import (
 )
 
 func InitRoutes(app *fiber.App, db *gorm.DB, env *config.Env) {
+
 	eventRepository := repositories_db.NewEventRepositoryDb(db)
 	userRepository := repositories_db.NewUserRepositoryDb(db)
 

@@ -9,7 +9,6 @@ import (
 type Env struct {
 	AppEnv                 string `mapstructure:"APP_ENV"`
 	ServerAddress          string `mapstructure:"SERVER_ADDRESS"`
-	ContextTimeout         int    `mapstructure:"CONTEXT_TIMEOUT"`
 	Port                   string `mapstructure:"PORT"`
 	DBHost                 string `mapstructure:"DB_HOST"`
 	DBPort                 string `mapstructure:"DB_PORT"`
@@ -31,6 +30,7 @@ func GetEnv() *Env {
 		log.Fatal("Can't find the file .env : ", err)
 	}
 
+	//deserialize .env file
 	err = viper.Unmarshal(&env)
 	if err != nil {
 		log.Fatal("Environment can't be loaded: ", err)

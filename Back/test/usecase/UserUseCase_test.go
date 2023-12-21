@@ -35,10 +35,8 @@ func (m *UserRepositoryMock) GetUserById(id int) (domain.User, error) {
 }
 
 func TestUserUseCase_GetEventsSubscribed(t *testing.T) {
-	// Create a mock for the UserRepository
 	userRepositoryMock := &UserRepositoryMock{}
 
-	// Create a user with subscribed events for testing
 	mockUser := domain.User{
 		Id: 1,
 		Events: []domain.Event{
@@ -63,32 +61,33 @@ func TestUserUseCase_GetEventsSubscribed(t *testing.T) {
 
 	// Configure the mock to return the mockUser when GetUserById is called
 	userRepositoryMock.On("GetUserById", mock.AnythingOfType("int")).Return(mockUser, nil)
-	userRepositoryMock.On("GetEventsSubscribed", 1, "active", 1, 1).Return([]domain.Event{mockUser.Events[0]}, nil)
-	userRepositoryMock.On("GetEventsSubscribed", 1, "completed", 1, 1).Return([]domain.Event{mockUser.Events[1]}, nil)
-	userRepositoryMock.On("GetEventsSubscribed", 1, "", 1, 2).Return(mockUser.Events, nil)
+	userRepositoryMock.On("GetEventsSubscribedByUserID", 1, "active", 1, 1).Return([]domain.Event{mockUser.Events[0]}, nil)
+	userRepositoryMock.On("GetEventsSubscribedByUserID", 1, "completed", 1, 1).Return([]domain.Event{mockUser.Events[1]}, nil)
+	userRepositoryMock.On("GetEventsSubscribedByUserID", 1, "", 1, 2).Return(mockUser.Events, nil)
 	// Create the user use case with the mock repository
 	userUseCase := usecases.NewUserUseCase(userRepositoryMock)
 
-	// Test the GetEventsSubscribed method
+	// Test the GetEventsSubscribedByUserID method
 	t.Run("Get active events", func(t *testing.T) {
-		events, err := userUseCase.GetEventsSubscribed(1, "active", 1, 1)
+		events, err := userUseCase.GetEventsSubscribedByUserID(1, "active", 1, 1)
 		assert.NoError(t, err)
 		assert.Len(t, events, 1) // Only the future event should be returned
 		assert.Equal(t, "Event 1", events[0].Title)
 	})
 
 	t.Run("Get completed events", func(t *testing.T) {
-		events, err := userUseCase.GetEventsSubscribed(1, "completed", 1, 1)
+		events, err := userUseCase.GetEventsSubscribedByUserID(1, "completed", 1, 1)
 		assert.NoError(t, err)
 		assert.Len(t, events, 1) // Only the past event should be returned
 		assert.Equal(t, "Event 2", events[0].Title)
 	})
 
 	t.Run("Get all events", func(t *testing.T) {
-		events, err := userUseCase.GetEventsSubscribed(1, "", 1, 2)
+		events, err := userUseCase.GetEventsSubscribedByUserID(1, "", 1, 2)
 		assert.NoError(t, err)
 		assert.Len(t, events, 2) // Both events should be returned
 		assert.Equal(t, "Event 1", events[0].Title)
 		assert.Equal(t, "Event 2", events[1].Title)
 	})
+
 }

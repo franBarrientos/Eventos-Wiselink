@@ -12,7 +12,14 @@ type EventUseCase struct {
 	eventRepository repositories.IEventRepository
 }
 
-func (e EventUseCase) GetAllEvents(page int, limit int) ([]output.EventDTO, error) {
+func NewEventUseCase(eventRepository repositories.IEventRepository) domain.IEventUseCase {
+	return &EventUseCase{
+		eventRepository: eventRepository,
+	}
+
+}
+
+func (e *EventUseCase) GetAllEvents(page int, limit int) ([]output.EventDTO, error) {
 
 	events, err := e.eventRepository.GetAllEvents(page, limit)
 	if err != nil {
@@ -26,14 +33,7 @@ func (e EventUseCase) GetAllEvents(page int, limit int) ([]output.EventDTO, erro
 
 }
 
-func NewEventUseCase(eventRepository repositories.IEventRepository) domain.IEventUseCase {
-	return &EventUseCase{
-		eventRepository: eventRepository,
-	}
-
-}
-
-func (e EventUseCase) GetEventsFiltered(date string, state string, title string, page int, limit int) ([]output.EventDTO, error) {
+func (e *EventUseCase) GetEventsFiltered(date string, state string, title string, page int, limit int) ([]output.EventDTO, error) {
 
 	events, err := e.eventRepository.GetEventsFiltered(date, state, title, page, limit)
 	if err != nil {
@@ -47,8 +47,8 @@ func (e EventUseCase) GetEventsFiltered(date string, state string, title string,
 
 }
 
-func (e EventUseCase) CreateEvent(event *input.EventAddDTO) (output.EventDTO, error) {
-	var eventEntity = mappers_dto.EventDtoToEventDomain(event)
+func (e *EventUseCase) CreateEvent(event *input.EventAddDTO) (output.EventDTO, error) {
+	var eventEntity = mappers_dto.EventDTOToEventDomain(event)
 	result, err := e.eventRepository.CreateEvent(eventEntity)
 
 	if err != nil {
@@ -58,7 +58,7 @@ func (e EventUseCase) CreateEvent(event *input.EventAddDTO) (output.EventDTO, er
 
 }
 
-func (e EventUseCase) UpdateEvent(id int, event *map[string]interface{}) (output.EventDTO, error) {
+func (e *EventUseCase) UpdateEvent(id int, event *map[string]interface{}) (output.EventDTO, error) {
 
 	userUpdated, err := e.eventRepository.UpdateEvent(id, *event)
 	if err != nil {
@@ -68,7 +68,7 @@ func (e EventUseCase) UpdateEvent(id int, event *map[string]interface{}) (output
 
 }
 
-func (e EventUseCase) SubscribeToEvent(subscribe *input.SubscribeAddDTO) error {
+func (e *EventUseCase) SubscribeToEvent(subscribe *input.SubscribeAddDTO) error {
 
 	err := e.eventRepository.AddSubscribe(subscribe.User, subscribe.Event)
 	if err != nil {
@@ -77,7 +77,7 @@ func (e EventUseCase) SubscribeToEvent(subscribe *input.SubscribeAddDTO) error {
 	return nil
 }
 
-func (e EventUseCase) GetSubscribersToEvent(eventId int, page int, limit int) ([]output.UserDTO, error) {
+func (e *EventUseCase) GetSubscribersToEvent(eventId int, page int, limit int) ([]output.UserDTO, error) {
 
 	subscribersDomain, err := e.eventRepository.GetSubscribersToEvent(eventId, page, limit)
 	if err != nil {
