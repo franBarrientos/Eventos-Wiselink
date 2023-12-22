@@ -16,7 +16,8 @@ services:
       - backend
   my-go-app:
     container_name: back
-    image: franbarrientos/eventos-wiselink-back
+    build:
+      context: ./Back
     ports:
       - "8080:8080"
     networks:
@@ -32,6 +33,14 @@ services:
       - frontend
       - backend
 
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - backend
 networks:
   frontend:
   backend:
